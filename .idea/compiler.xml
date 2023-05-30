@@ -6,8 +6,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="k-means" />
+        <module name="matrix_moltiplication" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="k-means" target="1.5" />
+    </bytecodeTargetLevel>
   </component>
 </project>
