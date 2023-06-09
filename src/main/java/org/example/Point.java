@@ -7,8 +7,8 @@ import java.util.StringTokenizer;
 public class Point {
     private final ArrayList<Double> coordinate;
 
-    private int cluster;
-    private double min_distance;
+    private int cluster=-1;
+    private double min_distance=-1;
 
     public Point(Text coordinate) {
         this.coordinate = parseCoordinates(coordinate);
@@ -29,5 +29,37 @@ public class Point {
         }
 
         return coordinateList;
+    }
+
+    public double calculateDistance(Point otherPoint) {
+        ArrayList<Double> otherCoordinates = otherPoint.getCoordinates();
+
+        if (coordinate.size() != otherCoordinates.size()) {
+            throw new IllegalArgumentException("The dimensions of the points are not the same.");
+        }
+
+        double squaredSum = 0.0;
+        for (int i = 0; i < coordinate.size(); i++) {
+            double diff = coordinate.get(i) - otherCoordinates.get(i);
+            squaredSum += diff * diff;
+        }
+
+        return Math.sqrt(squaredSum);
+    }
+
+    public double getMin_distance() {
+        return min_distance;
+    }
+
+    public void setMin_distance(double min_distance) {
+        this.min_distance = min_distance;
+    }
+
+    public int getCluster() {
+        return cluster;
+    }
+
+    public void setCluster(int cluster) {
+        this.cluster = cluster;
     }
 }

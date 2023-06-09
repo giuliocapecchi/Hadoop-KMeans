@@ -23,65 +23,61 @@ public class k_means {
         private final Text outputKey = new Text();
         private final Text outputValue = new Text();
 
+        ArrayList<Point> centroidi = new ArrayList<>();
+
         private static int dimensione = 0;
 
         @Override
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 
             Point punto = new Point(value);
-            ArrayList<Double> coordinatePunto = punto.getCoordinates();
-            System.out.println("Coordinate del punto: " + coordinatePunto);
 
             if(dimensione==0) {
                 dimensione =  punto.getCoordinates().size();
-                System.out.println("dimensione del punto:"+dimensione+"\n");
-            }
+                //System.out.println("dimensione del punto:"+dimensione+"\n");
+                // la prima volta recupero anche i centroidi
+                Configuration conf = context.getConfiguration();
+                String centroidCoordinatesString = conf.get("centroidCoordinates");
 
+                // Divide la stringa delle coordinate dei centroidi in un array di stringhe
+                String[] centroidCoordinatesArray = centroidCoordinatesString.split(";");
 
-/*
-            String generated_key;
-            String generated_value;
-
-            int rows = 4;
-
-            if (nome_matrice.equals("M")) {
-                int k = 0;
-                while (k < rows) {
-                    if (Double.parseDouble(cell_value) == 0) {
-                        k++;
-                        continue;
-                    }
-                    generated_key = index_row + "," + k;
-                    outputKey.set(generated_key);
-
-                    generated_value = nome_matrice + "," + index_column + "," + cell_value;
-                    outputValue.set(generated_value);
-
-                    System.out.println(generated_key + ":" + generated_value);
-                    context.write(outputKey, outputValue);
-
-                    k++;
-
+                // Converte ciascuna stringa in un oggetto Text e inserisce nell'array
+                for (int i = 0; i < centroidCoordinatesArray.length; i++) {
+                    centroidi.add(new Point(new Text(centroidCoordinatesArray[i])));
                 }
-            } else if (nome_matrice.equals("N")) {
-                int i = 0;
-                while (i < rows) {
-                    if (Double.parseDouble(cell_value) == 0) {
-                        i++;
-                        continue;
-                    }
-                    generated_key = i + "," + index_column;
-                    outputKey.set(generated_key);
 
-                    generated_value = nome_matrice + "," + index_row + "," + cell_value;
-                    outputValue.set(generated_value);
-
-                    System.out.println(generated_key + ":" + generated_value);
-                    context.write(outputKey, outputValue);
-                    i++;
+                //System.out.println("Stampa dei centroidi nuovi:");
+                for (int i=0; i<centroidi.size();i++){
+                    ArrayList<Double> coordinateCentroide = centroidi.get(i).getCoordinates();
+                   // System.out.println("Coordinate del centroide "+i+": " + coordinateCentroide+"\n");
                 }
             }
-*/
+
+            ArrayList<Double> distanze = new ArrayList<>();
+
+
+            for (int i=0; i<centroidi.size();i++){
+                double dist = punto.calculateDistance(centroidi.get(i));
+                distanze.add(dist);
+
+                //System.out.println("Distanza dal cluster "+i+":"+dist+"\n");
+
+                if(dist<punto.getMin_distance() || punto.getMin_distance()==-1){
+                    punto.setMin_distance(dist);
+                    punto.setCluster(i+1);
+                }
+            }
+
+
+
+            System.out.println("Stampa classe punto. Coordinate del punto: " + punto.getCoordinates()+"\n");
+            System.out.println(" Min_distance:"+punto.getMin_distance()+", cluster: " +punto.getCluster()+"\n");
+
+            outputKey.set(String.valueOf(punto.getCluster()));
+            outputValue.set(String.valueOf(punto.getCoordinates()));
+            context.write(outputKey, outputValue);
+
 
         }
     }
@@ -89,7 +85,16 @@ public class k_means {
     public static class kmeansReducer extends Reducer<Text, Text, Text, Text> {
         @Override
         public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
-/*
+
+            System.out.println("Chiave: "+ key.toString()+"\n");
+
+
+            for (Text value : values) {
+                System.out.println(value+" ");
+            }
+
+
+            /*
             String[] keyParts = key.toString().split(",");
             int i = Integer.parseInt(keyParts[0].trim());
             int k = Integer.parseInt(keyParts[1].trim());

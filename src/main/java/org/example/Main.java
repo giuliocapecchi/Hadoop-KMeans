@@ -20,7 +20,7 @@ import org.apache.hadoop.util.GenericOptionsParser;
 
 public class Main {
 
-    static ArrayList<String> centroidi = new ArrayList<>();;
+    static ArrayList<String> centroidi = new ArrayList<>();
     static String path = "coordinates.txt";
 
     public static void main(String[] args) throws Exception {
