@@ -48,7 +48,10 @@ public class k_means {
 
                 // Converte ciascuna stringa in un oggetto Text e inserisce nell'array
                 for (int i = 0; i < centroidCoordinatesArray.length; i++) {
-                    centroidi.add(new Point(new Text(centroidCoordinatesArray[i])));
+                    synchronized (centroidi) {
+                        centroidi.add(new Point(new Text(centroidCoordinatesArray[i])));
+                    }
+
                 }
 
                 //System.out.println("Stampa dei centroidi nuovi:");
@@ -97,10 +100,10 @@ public class k_means {
 
 
             int cluster_number = Integer.parseInt(key.toString()) - 1 ;
-
+            System.out.println("size di centroidi: "+centroidi.size());
 
             // inutile ???
-            Point centroide_attuale = centroidi.get(cluster_number);
+            Point centroide_attuale = new Point(centroidi.get(cluster_number).getCoordinates());
             StringTokenizer tokenizer = new StringTokenizer(values.toString(), ";");
 
             ArrayList<Double> zeros = new ArrayList<>(Collections.nCopies(dimensione, 0.0));
