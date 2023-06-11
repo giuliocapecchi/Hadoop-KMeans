@@ -19,13 +19,17 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 public class k_means {
+
+    static ArrayList<Point> centroidi = new ArrayList<>();
+    private static int dimensione = 0;
+
     public static class kmeansMapper extends Mapper<LongWritable, Text, Text, Text> {
+
+        // inutile???
         private final Text outputKey = new Text();
         private final Text outputValue = new Text();
 
-        ArrayList<Point> centroidi = new ArrayList<>();
 
-        private static int dimensione = 0;
 
         @Override
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
@@ -86,85 +90,51 @@ public class k_means {
         @Override
         public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
 
-            System.out.println("Chiave: "+ key.toString()+"\n");
-
-
+            /* System.out.println("Chiave: "+ key.toString()+"\n");
             for (Text value : values) {
                 System.out.println(value+" ");
+            } */
+
+
+            int cluster_number = Integer.parseInt(key.toString()) - 1 ;
+
+
+            // inutile ???
+            Point centroide_attuale = centroidi.get(cluster_number);
+            StringTokenizer tokenizer = new StringTokenizer(values.toString(), ";");
+
+            ArrayList<Double> zeros = new ArrayList<>(Collections.nCopies(dimensione, 0.0));
+
+            Point new_centroid = new Point(zeros);
+
+            int num_points = 0;
+
+            double distanza_media = 0;
+
+            while(tokenizer.hasMoreTokens()){
+                Point punto = new Point(new Text(tokenizer.nextToken()));
+
+                distanza_media  += punto.calculateDistance(centroide_attuale);
+
+                new_centroid.sum(punto);
+                num_points++;
             }
 
+            int i = 0;
 
-            /*
-            String[] keyParts = key.toString().split(",");
-            int i = Integer.parseInt(keyParts[0].trim());
-            int k = Integer.parseInt(keyParts[1].trim());
-
-            List<String> mList = new ArrayList<>();
-            List<String> nList = new ArrayList<>();
-
-            for (Text value : values) {
-                String triplet = value.toString().trim();
-                String firstElement = triplet.split(",")[0].trim();
-
-                if (firstElement.equals("M")) {
-                    mList.add(triplet);
-                } else if (firstElement.equals("N")) {
-                    nList.add(triplet);
-                }
+            while (i<dimensione){
+                double average = new_centroid.getCoordinates().get(i)/num_points;
+                new_centroid.setCoordinate(i,average);
+                i++;
             }
 
-            Comparator<String> comparator = new Comparator<String>() {
-                @Override
-                public int compare(String triplet1, String triplet2) {
-                    double secondElement1 = Double.parseDouble(triplet1.split(",")[1].trim());
-                    double secondElement2 = Double.parseDouble(triplet2.split(",")[1].trim());
+            distanza_media = distanza_media/num_points;
 
-                    return Double.compare(secondElement1, secondElement2);
-                }
-            };
-
-            mList.sort(comparator);
-            nList.sort(comparator);
-
-            // Stampa delle liste ordinate
-
-            System.out.print("chiave: ("+i + "," + k+")\n");
-            System.out.println("Lista M ordinata:");
-            for (String triplet : mList) {
-                System.out.println(triplet);
+            System.out.println("New centroid:");
+            for (Double coordinata : new_centroid.getCoordinates()) {
+                System.out.println(coordinata+"  ");
             }
-
-            System.out.println("Lista N ordinata:");
-            for (String triplet : nList) {
-                System.out.println(triplet);
-            }
-
-
-            // Esecuzione della moltiplicazione
-            double somma = 0;
-
-            for (String mTriplet : mList) {
-                String[] mParts = mTriplet.split(",");
-                int j = Integer.parseInt(mParts[1].trim());
-                double mValue = Double.parseDouble(mParts[2].trim());
-
-                for (String nTriplet : nList) {
-                    String[] nParts = nTriplet.split(",");
-                    int nJ = Integer.parseInt(nParts[1].trim());
-                    double nValue = Double.parseDouble(nParts[2].trim());
-
-                    if (j == nJ) {
-                        double result = mValue * nValue;
-                        somma += result;
-                    }
-                }
-            }
-
-            DoubleWritable risultato_out = new DoubleWritable();
-            risultato_out.set(somma);
-            context.write(key, new Text(Double.toString(risultato_out.get())));
-
-            */
+            context.write(key, new Text(new_centroid.getCoordinates() +";"+distanza_media));
 
         }
     }
