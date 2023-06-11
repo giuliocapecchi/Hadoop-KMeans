@@ -33,6 +33,6 @@ except ValueError:
     sys.exit(1)
 
 coordinates = generate_coordinates(num_points, num_dimensions)
-write_coordinates_to_file("coordinates.txt", coordinates)
+write_coordinates_to_file("../coordinates.txt", coordinates)
 
 print(f"Il file coordinates.txt è stato generato con successo.")
