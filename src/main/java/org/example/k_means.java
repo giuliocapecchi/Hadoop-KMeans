@@ -172,7 +172,7 @@ public class k_means {
             for (Double coordinata : new_centroid.getCoordinates()) {
                 System.out.println(coordinata+"  ");
             }
-            context.write(key, new Text(new_centroid.getCoordinates() +";"+distanza_media));
+            context.write(key, new Text(";"+new_centroid.getCoordinates() +";"+distanza_media));
 
         }
     }

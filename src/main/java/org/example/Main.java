@@ -3,8 +3,10 @@ package org.example;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
 
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -43,6 +45,12 @@ public class Main {
         int numPoints = getNumPoints(); // Metodo per ottenere il numero di punti dal file di input
 
         ArrayList<Integer> indexes  = new ArrayList<>();
+        ArrayList<Double>  average_distances = new ArrayList<>();
+        ArrayList<Double>  epsilon = new ArrayList<>();
+
+        for (int i = 0; i < k ; i++) {
+            average_distances.add(-1.0);
+        }
 
         while (indexes.size() < k) {
             int random_number = random.nextInt(numPoints);
@@ -87,7 +95,44 @@ public class Main {
         job.setInputFormatClass(TextInputFormat.class);
         job.setOutputFormatClass(TextOutputFormat.class);
 
-        System.exit(job.waitForCompletion(true) ? 0 : 1);
+        //System.exit(job.waitForCompletion(true) ? 0 : 1);
+
+        job.waitForCompletion(true);
+
+        // Esempio di recupero dei dati scritti nel contesto principale
+        FileSystem fs = FileSystem.get(conf);
+        Path outputPath = new Path("output/part-r-00000");  // Path al file di output del job
+        BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(outputPath)));
+
+        String nuovi_centroidi = "";
+        String line;
+
+        while ((line = br.readLine()) != null) {
+            // Divide la stringa delle coordinate dei centroidi in un array di stringhe
+            String[] context_informations = line.split(";");
+
+            int num_cluster = Integer.parseInt(context_informations[0].trim());
+            String coordinateString = context_informations[1].substring(1, context_informations[1].length() - 1);
+            double mean_distance = Double.parseDouble(context_informations[2].trim());
+
+            nuovi_centroidi = nuovi_centroidi+coordinateString+";";
+
+            //System.out.println("Dati scritti nel contesto: cluster: "+num_cluster+"\nMean distance:"+mean_distance+"\ncoordinate centroide nuovo:"+coordinateString+"\n");
+            if(average_distances.get(0)==-1){
+                average_distances.add(num_cluster-1,mean_distance);
+            }else{
+
+            }
+
+
+        }
+        br.close();
+
+        nuovi_centroidi = nuovi_centroidi.substring(0, nuovi_centroidi.length() - 1);
+        System.out.println("concatenazione"+nuovi_centroidi);
+
+
+
     }
 
 

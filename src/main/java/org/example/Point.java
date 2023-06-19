@@ -25,7 +25,13 @@ public class Point {
 
     private ArrayList<Double> parseCoordinates(Text coordinate) {
         ArrayList<Double> coordinateList = new ArrayList<>();
-        StringTokenizer tokenizer = new StringTokenizer(coordinate.toString(), ",");
+
+        String coordinateString = coordinate.toString();
+
+        // Rimuovi "[" e "]" dalla stringa di coordinate
+        coordinateString = coordinateString.substring(1, coordinateString.length() - 1);
+
+        StringTokenizer tokenizer = new StringTokenizer(coordinateString, ",");
 
         while (tokenizer.hasMoreTokens()) {
             String token = tokenizer.nextToken();
