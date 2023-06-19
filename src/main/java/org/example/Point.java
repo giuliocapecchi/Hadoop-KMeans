@@ -52,8 +52,7 @@ public class Point {
         return Math.sqrt(squaredSum);
     }
 
-    public Point sum(Point other) {
-        ArrayList<Double> sumCoordinates = new ArrayList<>();
+    public void sum(Point other) {
 
         // Verifica che i due punti abbiano lo stesso numero di coordinate
         if (this.coordinate.size() != other.coordinate.size()) {
@@ -62,12 +61,11 @@ public class Point {
 
         // Somma delle coordinate
         for (int i = 0; i < this.coordinate.size(); i++) {
-            double sum = this.coordinate.get(i) + other.coordinate.get(i);
-            sumCoordinates.add(sum);
+            Double sum = this.coordinate.get(i) + other.coordinate.get(i);
+            this.setCoordinate(i,sum);
+
         }
 
-        // Crea un nuovo oggetto Point con le coordinate sommate
-        return new Point(sumCoordinates);
     }
 
     public double getMin_distance() {
@@ -86,7 +84,7 @@ public class Point {
         this.cluster = cluster;
     }
 
-    public void setCoordinate(int i,double value) {
+    public void setCoordinate(int i,Double value) {
         this.coordinate.set(i,value);
     }
 }

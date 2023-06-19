@@ -20,14 +20,16 @@ import java.util.StringTokenizer;
 
 public class k_means {
 
-    static ArrayList<Point> centroidi = new ArrayList<>();
-    private static int dimensione = 0;
+
 
     public static class kmeansMapper extends Mapper<LongWritable, Text, Text, Text> {
 
         // inutile???
         private final Text outputKey = new Text();
         private final Text outputValue = new Text();
+
+        static ArrayList<Point> centroidi = new ArrayList<>();
+        private static int dimensione = 0;
 
 
 
@@ -48,9 +50,8 @@ public class k_means {
 
                 // Converte ciascuna stringa in un oggetto Text e inserisce nell'array
                 for (int i = 0; i < centroidCoordinatesArray.length; i++) {
-                    synchronized (centroidi) {
-                        centroidi.add(new Point(new Text(centroidCoordinatesArray[i])));
-                    }
+
+                    centroidi.add(new Point(new Text(centroidCoordinatesArray[i])));
 
                 }
 
@@ -90,43 +91,77 @@ public class k_means {
     }
 
     public static class kmeansReducer extends Reducer<Text, Text, Text, Text> {
+
+        static ArrayList<Point> centroidi = new ArrayList<>();
+        private static int dimensione = 0;
+
         @Override
         public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
 
-            /* System.out.println("Chiave: "+ key.toString()+"\n");
-            for (Text value : values) {
+            System.out.println("Chiave: "+ key.toString()+"\n");
+            /* for (Text value : values) {
                 System.out.println(value+" ");
-            } */
+            }*/
+
+            if(dimensione==0) {
+                //System.out.println("dimensione del punto:"+dimensione+"\n");
+                // la prima volta recupero anche i centroidi
+                Configuration conf = context.getConfiguration();
+                String centroidCoordinatesString = conf.get("centroidCoordinates");
+
+                // Divide la stringa delle coordinate dei centroidi in un array di stringhe
+                String[] centroidCoordinatesArray = centroidCoordinatesString.split(";");
+
+                // Converte ciascuna stringa in un oggetto Text e inserisce nell'array
+                for (int i = 0; i < centroidCoordinatesArray.length; i++) {
+
+                    centroidi.add(new Point(new Text(centroidCoordinatesArray[i])));
+                }
+
+                dimensione =  centroidi.get(0).getCoordinates().size();
+
+            }
 
 
             int cluster_number = Integer.parseInt(key.toString()) - 1 ;
-            System.out.println("size di centroidi: "+centroidi.size());
+            //System.out.println("size di centroidi: "+centroidi.size());
 
             // inutile ???
             Point centroide_attuale = new Point(centroidi.get(cluster_number).getCoordinates());
-            StringTokenizer tokenizer = new StringTokenizer(values.toString(), ";");
 
             ArrayList<Double> zeros = new ArrayList<>(Collections.nCopies(dimensione, 0.0));
 
             Point new_centroid = new Point(zeros);
 
+            System.out.println("centroide con zeri\n");
+            for (Double coordinata : new_centroid.getCoordinates()) {
+                System.out.println(coordinata+"  ");
+            }
+
             int num_points = 0;
 
             double distanza_media = 0;
 
-            while(tokenizer.hasMoreTokens()){
-                Point punto = new Point(new Text(tokenizer.nextToken()));
+            for (Text value : values) {
+
+                Point punto = new Point(value);
 
                 distanza_media  += punto.calculateDistance(centroide_attuale);
 
                 new_centroid.sum(punto);
                 num_points++;
+
+                // togli
+                System.out.println(value);
             }
+            System.out.println("num points : "+num_points);
 
             int i = 0;
 
             while (i<dimensione){
-                double average = new_centroid.getCoordinates().get(i)/num_points;
+                Double average = new_centroid.getCoordinates().get(i)/num_points;
+                System.out.println("new coordinate "+i+":"+average+"\n");
+                System.out.println("coordinata singola"+new_centroid.getCoordinates().get(i));
                 new_centroid.setCoordinate(i,average);
                 i++;
             }
