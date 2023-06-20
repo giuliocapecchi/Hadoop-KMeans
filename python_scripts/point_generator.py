@@ -7,7 +7,11 @@ def generate_coordinates(num_points, num_dimensions):
     for _ in range(num_points):
         point = []
         for _ in range(num_dimensions):
-            point.append(str(random.random() * 100))  # Genera una coordinata casuale tra 0 e 1
+            coordinate = random.random()*100
+            if random.random() >= 0.5:
+                coordinate = coordinate * (-1)
+
+            point.append(str(coordinate))  # Genera una coordinata casuale tra 0 e 1
         coordinates.append(point)
     return coordinates
 

@@ -35,6 +35,7 @@ public class Point {
         // Rimuovi "[" e "]" dalla stringa di coordinate
         coordinateString = coordinateString.substring(1, coordinateString.length() - 1);
 
+
         StringTokenizer tokenizer = new StringTokenizer(coordinateString, ",");
 
         while (tokenizer.hasMoreTokens()) {
@@ -46,12 +47,11 @@ public class Point {
         return coordinateList;
     }
 
+
     private ArrayList<Double> parseCoordinates(String coordinateString) {
         ArrayList<Double> coordinateList = new ArrayList<>();
 
         coordinateString = coordinateString.trim();
-        // Rimuovi "[" e "]" dalla stringa di coordinate
-        coordinateString = coordinateString.substring(1, coordinateString.length() - 1);
 
         StringTokenizer tokenizer = new StringTokenizer(coordinateString, ",");
 

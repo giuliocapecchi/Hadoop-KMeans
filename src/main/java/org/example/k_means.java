@@ -18,6 +18,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
+import static org.example.Main.deleteOldFile;
+import static org.example.Main.writeToFile;
+
 public class k_means {
 
 
@@ -36,7 +39,7 @@ public class k_means {
         @Override
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 
-            Point punto = new Point(value);
+            Point punto = new Point(value.toString());
 
             if(dimensione==0) {
                 dimensione =  punto.getCoordinates().size();
@@ -115,7 +118,7 @@ public class k_means {
                 // Converte ciascuna stringa in un oggetto Text e inserisce nell'array
                 for (int i = 0; i < centroidCoordinatesArray.length; i++) {
 
-                    centroidi.add(new Point(new Text(centroidCoordinatesArray[i])));
+                    centroidi.add(new Point(centroidCoordinatesArray[i]));
                 }
 
                 dimensione =  centroidi.get(0).getCoordinates().size();
@@ -133,10 +136,6 @@ public class k_means {
 
             Point new_centroid = new Point(zeros);
 
-            System.out.println("centroide con zeri\n");
-            for (Double coordinata : new_centroid.getCoordinates()) {
-                System.out.println(coordinata+"  ");
-            }
 
             int num_points = 0;
 
