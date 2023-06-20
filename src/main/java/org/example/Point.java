@@ -18,6 +18,10 @@ public class Point {
         this.coordinate = new ArrayList<>(coordinate);
     }
 
+    public Point(String coordinateString) {
+        this.coordinate = parseCoordinates(coordinateString);
+    }
+
 
     public ArrayList<Double> getCoordinates() {
         return coordinate;
@@ -26,8 +30,26 @@ public class Point {
     private ArrayList<Double> parseCoordinates(Text coordinate) {
         ArrayList<Double> coordinateList = new ArrayList<>();
 
-        String coordinateString = coordinate.toString();
+        String coordinateString = coordinate.toString().trim();
 
+        // Rimuovi "[" e "]" dalla stringa di coordinate
+        coordinateString = coordinateString.substring(1, coordinateString.length() - 1);
+
+        StringTokenizer tokenizer = new StringTokenizer(coordinateString, ",");
+
+        while (tokenizer.hasMoreTokens()) {
+            String token = tokenizer.nextToken();
+            double coordinateValue = Double.parseDouble(token);
+            coordinateList.add(coordinateValue);
+        }
+
+        return coordinateList;
+    }
+
+    private ArrayList<Double> parseCoordinates(String coordinateString) {
+        ArrayList<Double> coordinateList = new ArrayList<>();
+
+        coordinateString = coordinateString.trim();
         // Rimuovi "[" e "]" dalla stringa di coordinate
         coordinateString = coordinateString.substring(1, coordinateString.length() - 1);
 

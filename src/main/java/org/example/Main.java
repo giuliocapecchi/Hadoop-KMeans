@@ -1,9 +1,6 @@
 package org.example;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.*;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -38,6 +35,10 @@ public class Main {
         System.out.println("args[2]: <k>=" + otherArgs[2]);
 
         int k = Integer.parseInt(otherArgs[2]);
+        //
+        double threshold = 0.1;
+        int max_iter = 1000;
+        //
 
         // Generazione casuale degli indici per i centroidi iniziali
         Random random = new Random();
@@ -45,12 +46,7 @@ public class Main {
         int numPoints = getNumPoints(); // Metodo per ottenere il numero di punti dal file di input
 
         ArrayList<Integer> indexes  = new ArrayList<>();
-        ArrayList<Double>  average_distances = new ArrayList<>();
-        ArrayList<Double>  epsilon = new ArrayList<>();
 
-        for (int i = 0; i < k ; i++) {
-            average_distances.add(-1.0);
-        }
 
         while (indexes.size() < k) {
             int random_number = random.nextInt(numPoints);
@@ -70,68 +66,76 @@ public class Main {
         System.out.println("numero di punti:"+numPoints);
         System.out.println("Stampa dei centroidi:");
 
-        String centroidCoordinatesString = String.join(";", centroidi);
-        System.out.println(centroidCoordinatesString);
+        int numero_iterazioni;
 
-        Job job = Job.getInstance(conf, "kmeans");
+        for(numero_iterazioni=0; numero_iterazioni<max_iter;numero_iterazioni++){
+            String centroidCoordinatesString = String.join(";", centroidi);
+            System.out.println(centroidCoordinatesString);
 
-        job.setJarByClass(k_means.class);
-        job.setMapperClass(k_means.kmeansMapper.class);
-        job.setReducerClass(k_means.kmeansReducer.class);
+            Job job = Job.getInstance(conf, "kmeans");
 
-        // Imposta le variabili di configurazione per il numero di cluster/centroidi e gli indici dei centroidi iniziali
-        job.getConfiguration().setInt("k", k);
-        job.getConfiguration().set("centroidCoordinates", centroidCoordinatesString);
+            job.setJarByClass(k_means.class);
+            job.setMapperClass(k_means.kmeansMapper.class);
+            job.setReducerClass(k_means.kmeansReducer.class);
+
+            // Imposta le variabili di configurazione per il numero di cluster/centroidi e gli indici dei centroidi iniziali
+            job.getConfiguration().setInt("k", k);
+            job.getConfiguration().set("centroidCoordinates", centroidCoordinatesString);
 
 
-        //job.setNumReduceTasks(3); // OCIO NON WORKA??????
+            //job.setNumReduceTasks(3); // OCIO NON WORKA??????
 
-        job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(Text.class);
+            job.setOutputKeyClass(Text.class);
+            job.setOutputValueClass(Text.class);
 
-        FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
-        FileOutputFormat.setOutputPath(job, new Path(otherArgs[1]));
+            FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
+            FileOutputFormat.setOutputPath(job, new Path(otherArgs[1]));
 
-        job.setInputFormatClass(TextInputFormat.class);
-        job.setOutputFormatClass(TextOutputFormat.class);
+            job.setInputFormatClass(TextInputFormat.class);
+            job.setOutputFormatClass(TextOutputFormat.class);
 
-        //System.exit(job.waitForCompletion(true) ? 0 : 1);
+            //System.exit(job.waitForCompletion(true) ? 0 : 1);
 
-        job.waitForCompletion(true);
+            job.waitForCompletion(true);
 
-        // Esempio di recupero dei dati scritti nel contesto principale
-        FileSystem fs = FileSystem.get(conf);
-        Path outputPath = new Path("output/part-r-00000");  // Path al file di output del job
-        BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(outputPath)));
+            // Esempio di recupero dei dati scritti nel contesto principale
+            FileSystem fs = FileSystem.get(conf);
+            Path outputPath = new Path("output/part-r-00000");  // Path al file di output del job
+            BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(outputPath)));
 
-        String nuovi_centroidi = "";
-        String line;
+            String nuovi_centroidi = "";
+            String line;
+            boolean finito = true;
 
-        while ((line = br.readLine()) != null) {
-            // Divide la stringa delle coordinate dei centroidi in un array di stringhe
-            String[] context_informations = line.split(";");
+            while ((line = br.readLine()) != null) {
+                // Divide la stringa delle coordinate dei centroidi in un array di stringhe
+                String[] context_informations = line.split(";");
 
-            int num_cluster = Integer.parseInt(context_informations[0].trim());
-            String coordinateString = context_informations[1].substring(1, context_informations[1].length() - 1);
-            double mean_distance = Double.parseDouble(context_informations[2].trim());
+                int num_cluster = Integer.parseInt(context_informations[0].trim());
+                String coordinateString = context_informations[1].substring(1, context_informations[1].length() - 1);
 
-            nuovi_centroidi = nuovi_centroidi+coordinateString+";";
+                // for the new MapReduce centroids
+                nuovi_centroidi = nuovi_centroidi+coordinateString+";";
 
-            //System.out.println("Dati scritti nel contesto: cluster: "+num_cluster+"\nMean distance:"+mean_distance+"\ncoordinate centroide nuovo:"+coordinateString+"\n");
-            if(average_distances.get(0)==-1){
-                average_distances.add(num_cluster-1,mean_distance);
-            }else{
+                Point old_centroid = new Point(centroidi.get(num_cluster-1));
+                Point new_centroid = new Point(coordinateString);
+                double distance = old_centroid.calculateDistance(new_centroid);
+                if(distance > threshold)
+                    finito = false;
+
 
             }
+            br.close();
 
+            nuovi_centroidi = nuovi_centroidi.substring(0, nuovi_centroidi.length() - 1);
+            System.out.println("concatenazione"+nuovi_centroidi);
 
+            if(finito)
+                break;
         }
-        br.close();
 
-        nuovi_centroidi = nuovi_centroidi.substring(0, nuovi_centroidi.length() - 1);
-        System.out.println("concatenazione"+nuovi_centroidi);
-
-
+        System.out.println("K-means converged at iteration "+numero_iterazioni);
+        System.exit(0);
 
     }
 
@@ -177,6 +181,22 @@ public class Main {
         }
 
         return numPoints;
+    }
+
+    public static void writeToFile(String content){
+        String filePath = "log_distances.txt";
+
+        try (FileWriter fileWriter = new FileWriter(filePath, true);
+             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)) {
+
+            bufferedWriter.write(content);
+            bufferedWriter.newLine();
+
+            System.out.println("Content appended to the file.");
+
+        } catch (IOException e) {
+            System.out.println("An error occurred while appending to the file: " + e.getMessage());
+        }
     }
 
 

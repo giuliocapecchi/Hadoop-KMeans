@@ -51,7 +51,7 @@ public class k_means {
                 // Converte ciascuna stringa in un oggetto Text e inserisce nell'array
                 for (int i = 0; i < centroidCoordinatesArray.length; i++) {
 
-                    centroidi.add(new Point(new Text(centroidCoordinatesArray[i])));
+                    centroidi.add(new Point(centroidCoordinatesArray[i]));
 
                 }
 
@@ -140,13 +140,15 @@ public class k_means {
 
             int num_points = 0;
 
-            double distanza_media = 0;
+            //rimuovi
+            //double distanza_media = 0;
 
             for (Text value : values) {
 
                 Point punto = new Point(value);
 
-                distanza_media  += punto.calculateDistance(centroide_attuale);
+              //rimuovi
+              //  distanza_media  += punto.calculateDistance(centroide_attuale);
 
                 new_centroid.sum(punto);
                 num_points++;
@@ -166,13 +168,13 @@ public class k_means {
                 i++;
             }
 
-            distanza_media = distanza_media/num_points;
+           // distanza_media = distanza_media/num_points;
 
             System.out.println("New centroid:");
             for (Double coordinata : new_centroid.getCoordinates()) {
                 System.out.println(coordinata+"  ");
             }
-            context.write(key, new Text(";"+new_centroid.getCoordinates() +";"+distanza_media));
+            context.write(key, new Text(";"+new_centroid.getCoordinates()));
 
         }
     }
