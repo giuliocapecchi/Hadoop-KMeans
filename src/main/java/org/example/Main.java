@@ -70,8 +70,8 @@ public class Main {
 
         int numero_iterazioni;
 
-        //PythonExecutor("./python_scripts/plot_generator.py",0, String.join(";", centroidi));
 
+        long startTime = System.currentTimeMillis();
 
         for(numero_iterazioni=0; numero_iterazioni<max_iter;numero_iterazioni++){
 
@@ -116,7 +116,7 @@ public class Main {
             boolean finito = true;
 
 
-            writeToFile(String.valueOf(numero_iterazioni), LogPath);
+            writeToFile(String.valueOf(numero_iterazioni+1), LogPath);
 
 
             StringBuilder sb = new StringBuilder();
@@ -172,7 +172,12 @@ public class Main {
 
         }
 
+
+        long endTime = System.currentTimeMillis();
+        long duration = endTime - startTime;
+        writeToFile("Execution time: "+duration/1000000+" milliseconds",LogPath);
         System.out.println("K-means converged at iteration "+numero_iterazioni);
+        System.out.println("K-means started at :"+startTime+", finished at: "+endTime);
         System.exit(0);
 
     }
