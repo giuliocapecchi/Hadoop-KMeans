@@ -70,6 +70,9 @@ public class Main {
 
         int numero_iterazioni;
 
+        //PythonExecutor("./python_scripts/plot_generator.py",0, String.join(";", centroidi));
+
+
         for(numero_iterazioni=0; numero_iterazioni<max_iter;numero_iterazioni++){
 
             System.out.println("iterazione numero: "+numero_iterazioni);
@@ -115,7 +118,19 @@ public class Main {
 
             writeToFile(String.valueOf(numero_iterazioni), LogPath);
 
-            PythonExecutor("./python_scripts/plot_generator.py",-1, String.join(";", centroidi));
+
+            StringBuilder sb = new StringBuilder();
+            // Itera attraverso gli elementi dell'ArrayList
+            for (String elemento : centroidi) {
+                sb.append(elemento);  // Aggiungi l'elemento alla stringa
+                sb.append(";");       // Aggiungi il separatore ";"
+            }
+            // Rimuovi l'ultimo ";" dalla stringa risultante se necessario
+            if (!centroidi.isEmpty()) {
+                sb.setLength(sb.length() - 1);
+            }
+            String old_centroidiStringhe = sb.toString();
+
 
 
             while ((line = br.readLine()) != null) {
@@ -149,13 +164,11 @@ public class Main {
             nuovi_centroidi = nuovi_centroidi.substring(0, nuovi_centroidi.length() - 1);
             System.out.println("concatenazione"+nuovi_centroidi);
 
-            // ci sta bene
-            // "if dimensione == 2 "
-            PythonExecutor("./python_scripts/plot_generator.py",numero_iterazioni,nuovi_centroidi);
-
             if(finito)
                 break;
 
+            // if(dimensione == 2)
+            PythonExecutor("./python_scripts/plot_generator.py",numero_iterazioni,old_centroidiStringhe);
 
         }
 
