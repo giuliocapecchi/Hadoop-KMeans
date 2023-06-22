@@ -143,8 +143,8 @@ public class Main {
                 // for the new MapReduce centroids
                 nuovi_centroidi = nuovi_centroidi+coordinateString+";";
 
-                Point old_centroid = new Point(centroidi.get(num_cluster-1));
-                Point new_centroid = new Point(coordinateString);
+                PointWriteable old_centroid = new PointWriteable(centroidi.get(num_cluster-1));
+                PointWriteable new_centroid = new PointWriteable(coordinateString);
                 double distance = old_centroid.calculateDistance(new_centroid);
 
                 System.out.println("Centroid number "+num_cluster+" movement : "+distance);
@@ -168,16 +168,15 @@ public class Main {
                 break;
 
             // if(dimensione == 2)
-            PythonExecutor("./python_scripts/plot_generator.py",numero_iterazioni,old_centroidiStringhe);
+            //PythonExecutor("./python_scripts/plot_generator.py",numero_iterazioni,old_centroidiStringhe);
 
         }
 
 
         long endTime = System.currentTimeMillis();
         long duration = endTime - startTime;
-        writeToFile("Execution time: "+duration/1000000+" milliseconds",LogPath);
+        writeToFile("Execution time: "+duration/1000+" seconds",LogPath);
         System.out.println("K-means converged at iteration "+numero_iterazioni);
-        System.out.println("K-means started at :"+startTime+", finished at: "+endTime);
         System.exit(0);
 
     }

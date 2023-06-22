@@ -25,22 +25,20 @@ public class k_means {
 
 
 
-    public static class kmeansMapper extends Mapper<LongWritable, Text, Text, Text> {
+    public static class kmeansMapper extends Mapper<LongWritable, Text, IntWritable, PointWriteable> {
 
-        // inutile???
-        private final Text outputKey = new Text();
-        private final Text outputValue = new Text();
+        private final IntWritable outputKey = new IntWritable();
 
-        static ArrayList<Point> centroidi = new ArrayList<>();
+        static ArrayList<PointWriteable> centroidi = new ArrayList<PointWriteable>();
         private static int dimensione = 0;
-
 
 
         @Override
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 
-            Point punto = new Point(value.toString());
+            PointWriteable punto = new PointWriteable(value.toString());
 
+            // setup method potenzialmente !!!!
             if(dimensione==0) {
                 dimensione =  punto.getCoordinates().size();
                 //System.out.println("dimensione del punto:"+dimensione+"\n");
@@ -54,7 +52,7 @@ public class k_means {
                 // Converte ciascuna stringa in un oggetto Text e inserisce nell'array
                 for (int i = 0; i < centroidCoordinatesArray.length; i++) {
 
-                    centroidi.add(new Point(centroidCoordinatesArray[i]));
+                    centroidi.add(new PointWriteable(centroidCoordinatesArray[i]));
 
                 }
 
@@ -65,15 +63,10 @@ public class k_means {
                 }
             }
 
-            ArrayList<Double> distanze = new ArrayList<>();
-
 
             for (int i=0; i<centroidi.size();i++){
                 double dist = punto.calculateDistance(centroidi.get(i));
-                distanze.add(dist);
-
                 //System.out.println("Distanza dal cluster "+i+":"+dist+"\n");
-
                 if(dist<punto.getMin_distance() || punto.getMin_distance()==-1){
                     punto.setMin_distance(dist);
                     punto.setCluster(i+1);
@@ -85,21 +78,20 @@ public class k_means {
             System.out.println("Stampa classe punto. Coordinate del punto: " + punto.getCoordinates()+"\n");
             System.out.println(" Min_distance:"+punto.getMin_distance()+", cluster: " +punto.getCluster()+"\n");
 
-            outputKey.set(String.valueOf(punto.getCluster()));
-            outputValue.set(String.valueOf(punto.getCoordinates()));
-            context.write(outputKey, outputValue);
+            outputKey.set(punto.getCluster());
+            context.write(outputKey, punto);
 
 
         }
     }
 
-    public static class kmeansReducer extends Reducer<Text, Text, Text, Text> {
+    public static class kmeansReducer extends Reducer<IntWritable, PointWriteable, IntWritable, Text> {
 
-        static ArrayList<Point> centroidi = new ArrayList<>();
+        static ArrayList<PointWriteable> centroidi = new ArrayList<>();
         private static int dimensione = 0;
 
         @Override
-        public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+        public void reduce(IntWritable key, Iterable<PointWriteable> values, Context context) throws IOException, InterruptedException {
 
             System.out.println("Chiave: "+ key.toString()+"\n");
             /* for (Text value : values) {
@@ -118,7 +110,7 @@ public class k_means {
                 // Converte ciascuna stringa in un oggetto Text e inserisce nell'array
                 for (int i = 0; i < centroidCoordinatesArray.length; i++) {
 
-                    centroidi.add(new Point(centroidCoordinatesArray[i]));
+                    centroidi.add(new PointWriteable(centroidCoordinatesArray[i]));
                 }
 
                 dimensione =  centroidi.get(0).getCoordinates().size();
@@ -126,34 +118,27 @@ public class k_means {
             }
 
 
-            int cluster_number = Integer.parseInt(key.toString()) - 1 ;
+            int cluster_number = key.get() - 1 ;
             //System.out.println("size di centroidi: "+centroidi.size());
-
-            // inutile ???
-            Point centroide_attuale = new Point(centroidi.get(cluster_number).getCoordinates());
 
             ArrayList<Double> zeros = new ArrayList<>(Collections.nCopies(dimensione, 0.0));
 
-            Point new_centroid = new Point(zeros);
-
+            PointWriteable new_centroid = new PointWriteable(zeros);
 
             int num_points = 0;
 
-            //rimuovi
-            //double distanza_media = 0;
+            for (PointWriteable value : values) {
 
-            for (Text value : values) {
-
-                Point punto = new Point(value);
-
-              //rimuovi
-              //  distanza_media  += punto.calculateDistance(centroide_attuale);
+                PointWriteable punto = new PointWriteable(value);
 
                 new_centroid.sum(punto);
+
+                //modifica
                 num_points++;
 
                 // togli
                 System.out.println(value);
+
             }
             System.out.println("num points : "+num_points);
 
@@ -173,6 +158,7 @@ public class k_means {
             for (Double coordinata : new_centroid.getCoordinates()) {
                 System.out.println(coordinata+"  ");
             }
+
             context.write(key, new Text(";"+new_centroid.getCoordinates()));
 
         }
