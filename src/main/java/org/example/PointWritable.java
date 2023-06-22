@@ -1,8 +1,6 @@
 package org.example;
 
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.VIntWritable;
 import org.apache.hadoop.io.Writable;
 
 import java.io.DataOutput;
@@ -12,40 +10,40 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 
-public class PointWriteable implements Writable {
+public class PointWritable implements Writable {
 
     private ArrayList<Double> coordinate;
 
     private int cluster=-1;
     private double min_distance=-1;
 
-    /////////////////////////////
+   private int weight = 1;
 
     // costruttore default
-    public PointWriteable(){
+    public PointWritable(){
     }
 
     // costruttore di copia
-    public PointWriteable(PointWriteable point){
+    public PointWritable(PointWritable point){
 
         this.cluster = point.cluster;
         this.min_distance = point.min_distance;
         this.coordinate = point.coordinate;
     }
 
-    public PointWriteable(Text coordinate) {
+    public PointWritable(Text coordinate) {
         this.coordinate = parseCoordinates(coordinate);
     }
 
-    public PointWriteable(ArrayList<Double> coordinate) {
+    public PointWritable(ArrayList<Double> coordinate) {
         this.coordinate = new ArrayList<>(coordinate);
     }
 
-    public PointWriteable(String coordinateString) {
+    public PointWritable(String coordinateString) {
         this.coordinate = parseCoordinates(coordinateString);
     }
 
-    public void sum(PointWriteable other) {
+    public void sum(PointWritable other) {
 
         // Verifica che i due punti abbiano lo stesso numero di coordinate
         if (this.coordinate.size() != other.coordinate.size()) {
@@ -61,7 +59,7 @@ public class PointWriteable implements Writable {
 
     }
 
-    public double calculateDistance(PointWriteable otherPoint) {
+    public double calculateDistance(PointWritable otherPoint) {
 
         ArrayList<Double> otherCoordinates = otherPoint.getCoordinates();
 
@@ -107,16 +105,13 @@ public class PointWriteable implements Writable {
 
         while (tokenizer.hasMoreTokens()) {
             String token = tokenizer.nextToken();
+            System.out.println("token : "+token);
             double coordinateValue = Double.parseDouble(token);
             coordinateList.add(coordinateValue);
         }
 
         return coordinateList;
     }
-
-
-
-    //////////////////////////////
 
     public ArrayList<Double> getCoordinates() {
         return coordinate;
@@ -142,6 +137,13 @@ public class PointWriteable implements Writable {
         this.min_distance = min_distance;
     }
 
+    public int getWeight() {
+        return weight;
+    }
+
+    public void setWeight(int weight) {
+        this.weight = weight;
+    }
 
 
     // write and read methods required by the Writable interface
@@ -153,6 +155,7 @@ public class PointWriteable implements Writable {
         }
         out.writeInt(cluster);
         out.writeDouble(min_distance);
+        out.writeInt(weight);
     }
 
     @Override
@@ -164,6 +167,17 @@ public class PointWriteable implements Writable {
         }
         cluster = in.readInt();
         min_distance = in.readDouble();
+        weight = in.readInt();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (double coordinata : coordinate) {
+            sb.append(coordinata).append(",");
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        return sb.toString();
     }
 
 }

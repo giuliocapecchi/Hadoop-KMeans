@@ -5,38 +5,27 @@ import java.util.*;
 
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
-import org.apache.hadoop.util.GenericOptionsParser;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.StringTokenizer;
 
-import static org.example.Main.deleteOldFile;
-import static org.example.Main.writeToFile;
+import java.util.ArrayList;
 
 public class k_means {
 
 
 
-    public static class kmeansMapper extends Mapper<LongWritable, Text, IntWritable, PointWriteable> {
+    public static class kmeansMapper extends Mapper<LongWritable, Text, IntWritable, PointWritable> {
 
         private final IntWritable outputKey = new IntWritable();
 
-        static ArrayList<PointWriteable> centroidi = new ArrayList<>();
+        static ArrayList<PointWritable> centroidi = new ArrayList<>();
         private static int dimensione = 0;
 
 
         @Override
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 
-            PointWriteable punto = new PointWriteable(value.toString());
+            PointWritable punto = new PointWritable(value.toString());
 
             // setup method potenzialmente !!!!
             if(dimensione==0) {
@@ -44,7 +33,7 @@ public class k_means {
                 //System.out.println("dimensione del punto:"+dimensione+"\n");
                 // la prima volta recupero anche i centroidi
                 Configuration conf = context.getConfiguration();
-                String centroidCoordinatesString = conf.get("centroidCoordinates");
+                String centroidCoordinatesString = conf.get("centroidCoordinates","");
 
                 // Divide la stringa delle coordinate dei centroidi in un array di stringhe
                 String[] centroidCoordinatesArray = centroidCoordinatesString.split(";");
@@ -52,7 +41,7 @@ public class k_means {
                 // Converte ciascuna stringa in un oggetto Text e inserisce nell'array
                 for (int i = 0; i < centroidCoordinatesArray.length; i++) {
 
-                    centroidi.add(new PointWriteable(centroidCoordinatesArray[i]));
+                    centroidi.add(new PointWritable(centroidCoordinatesArray[i]));
 
                 }
 
@@ -85,15 +74,16 @@ public class k_means {
         }
     }
 
-    public static class kmeansReducer extends Reducer<IntWritable, PointWriteable, IntWritable, Text> {
+    public static class kmeansReducer extends Reducer<IntWritable, PointWritable, IntWritable, PointWritable> {
 
-        static ArrayList<PointWriteable> centroidi = new ArrayList<>();
+        static ArrayList<PointWritable> centroidi = new ArrayList<>();
         private static int dimensione = 0;
 
         @Override
-        public void reduce(IntWritable key, Iterable<PointWriteable> values, Context context) throws IOException, InterruptedException {
+        public void reduce(IntWritable key, Iterable<PointWritable> values, Context context) throws IOException, InterruptedException {
 
             System.out.println("Chiave: "+ key.toString()+"\n");
+
             /* for (Text value : values) {
                 System.out.println(value+" ");
             }*/
@@ -110,7 +100,7 @@ public class k_means {
                 // Converte ciascuna stringa in un oggetto Text e inserisce nell'array
                 for (int i = 0; i < centroidCoordinatesArray.length; i++) {
 
-                    centroidi.add(new PointWriteable(centroidCoordinatesArray[i]));
+                    centroidi.add(new PointWritable(centroidCoordinatesArray[i]));
                 }
 
                 dimensione =  centroidi.get(0).getCoordinates().size();
@@ -118,28 +108,25 @@ public class k_means {
             }
 
 
-            int cluster_number = key.get() - 1 ;
+            // int cluster_number = key.get() - 1 ;
+
             //System.out.println("size di centroidi: "+centroidi.size());
 
             ArrayList<Double> zeros = new ArrayList<>(Collections.nCopies(dimensione, 0.0));
 
-            PointWriteable new_centroid = new PointWriteable(zeros);
+            PointWritable new_centroid = new PointWritable(zeros);
 
+
+            // cambiare
             int num_points = 0;
 
-            for (PointWriteable value : values) {
-
-                PointWriteable punto = new PointWriteable(value);
-
+            for (PointWritable punto : values) {
                 new_centroid.sum(punto);
-
                 //modifica
-                num_points++;
-
-                // togli
-                System.out.println(value);
-
+                num_points += punto.getWeight();
             }
+
+            //elimina
             System.out.println("num points : "+num_points);
 
             int i = 0;
@@ -152,17 +139,36 @@ public class k_means {
                 i++;
             }
 
-           // distanza_media = distanza_media/num_points;
-
             System.out.println("New centroid:");
             for (Double coordinata : new_centroid.getCoordinates()) {
                 System.out.println(coordinata+"  ");
             }
 
-            context.write(key, new Text(";"+new_centroid.getCoordinates()));
+            context.write(key,new_centroid);
 
         }
     }
+
+    public class kmeansCombiner extends Reducer<IntWritable, PointWritable, IntWritable, PointWritable> {
+
+        @Override
+        protected void reduce(IntWritable key, Iterable<PointWritable> values, Context context) throws IOException, InterruptedException {
+
+            Configuration conf = context.getConfiguration();
+            int dimensione = conf.getInt("d",-1);
+            ArrayList<Double> zeros = new ArrayList<>(Collections.nCopies(dimensione, 0.0));
+            PointWritable agglomerate = new PointWritable(zeros);
+
+            for (PointWritable punto : values) {
+                agglomerate.sum(punto);
+                int weight = agglomerate.getWeight() + punto.getWeight();
+                agglomerate.setWeight(weight);
+            }
+            context.write(key,agglomerate);
+        }
+    }
+
+
 
 
 }
