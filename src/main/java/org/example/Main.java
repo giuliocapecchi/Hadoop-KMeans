@@ -113,7 +113,7 @@ public class Main {
             job.setJarByClass(k_means.class);
             job.setMapperClass(k_means.kmeansMapper.class);
             job.setReducerClass(k_means.kmeansReducer.class);
-            //job.setCombinerClass();
+            job.setCombinerClass(k_means.kmeansCombiner.class);
             job.setMapOutputKeyClass(IntWritable.class);
             job.setMapOutputValueClass(PointWritable.class);
             job.setOutputKeyClass(IntWritable.class);

@@ -33,7 +33,7 @@ public class k_means {
                 //System.out.println("dimensione del punto:"+dimensione+"\n");
                 // la prima volta recupero anche i centroidi
                 Configuration conf = context.getConfiguration();
-                String centroidCoordinatesString = conf.get("centroidCoordinates","");
+                String centroidCoordinatesString = conf.get("centroidCoordinates");
 
                 // Divide la stringa delle coordinate dei centroidi in un array di stringhe
                 String[] centroidCoordinatesArray = centroidCoordinatesString.split(";");
@@ -45,10 +45,10 @@ public class k_means {
 
                 }
 
-                //System.out.println("Stampa dei centroidi nuovi:");
+                System.out.println("Stampa dei centroidi nuovi:");
                 for (int i=0; i<centroidi.size();i++){
                     ArrayList<Double> coordinateCentroide = centroidi.get(i).getCoordinates();
-                   // System.out.println("Coordinate del centroide "+i+": " + coordinateCentroide+"\n");
+                   System.out.println("Coordinate del centroide "+i+": " + coordinateCentroide+"\n");
                 }
             }
 
@@ -71,6 +71,30 @@ public class k_means {
             context.write(outputKey, punto);
 
 
+        }
+    }
+
+    public static class kmeansCombiner extends Reducer<IntWritable, PointWritable, IntWritable, PointWritable> {
+
+        @Override
+        protected void reduce(IntWritable key, Iterable<PointWritable> values, Context context) throws IOException, InterruptedException {
+
+            Configuration conf = context.getConfiguration();
+            int dimensione = conf.getInt("d",-1);
+            ArrayList<Double> zeros = new ArrayList<>(Collections.nCopies(dimensione, 0.0));
+            PointWritable agglomerate = new PointWritable(zeros);
+
+            System.out.println("COMBINER STARTED!");
+            for (PointWritable punto : values) {
+                agglomerate.sum(punto);
+                int weight = agglomerate.getWeight() + punto.getWeight();
+                agglomerate.setWeight(weight);
+
+            }
+
+            System.out.println("weight:"+agglomerate.getWeight());
+
+            context.write(key,agglomerate);
         }
     }
 
@@ -148,27 +172,6 @@ public class k_means {
 
         }
     }
-
-    public class kmeansCombiner extends Reducer<IntWritable, PointWritable, IntWritable, PointWritable> {
-
-        @Override
-        protected void reduce(IntWritable key, Iterable<PointWritable> values, Context context) throws IOException, InterruptedException {
-
-            Configuration conf = context.getConfiguration();
-            int dimensione = conf.getInt("d",-1);
-            ArrayList<Double> zeros = new ArrayList<>(Collections.nCopies(dimensione, 0.0));
-            PointWritable agglomerate = new PointWritable(zeros);
-
-            for (PointWritable punto : values) {
-                agglomerate.sum(punto);
-                int weight = agglomerate.getWeight() + punto.getWeight();
-                agglomerate.setWeight(weight);
-            }
-            context.write(key,agglomerate);
-        }
-    }
-
-
 
 
 }
