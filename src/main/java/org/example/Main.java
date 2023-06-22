@@ -93,8 +93,11 @@ public class Main {
 
             //job.setNumReduceTasks(3); // OCIO NON WORKA??????
 
-            job.setOutputKeyClass(Text.class);
+            job.setMapOutputKeyClass(IntWritable.class);
+            job.setMapOutputValueClass(PointWriteable.class);
+            job.setOutputKeyClass(IntWritable.class);
             job.setOutputValueClass(Text.class);
+
 
             FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
             FileOutputFormat.setOutputPath(job, new Path(otherArgs[1]+numero_iterazioni));
@@ -168,7 +171,7 @@ public class Main {
                 break;
 
             // if(dimensione == 2)
-            //PythonExecutor("./python_scripts/plot_generator.py",numero_iterazioni,old_centroidiStringhe);
+            PythonExecutor("./python_scripts/plot_generator.py",numero_iterazioni,old_centroidiStringhe);
 
         }
 

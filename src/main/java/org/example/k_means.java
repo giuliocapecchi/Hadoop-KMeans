@@ -29,7 +29,7 @@ public class k_means {
 
         private final IntWritable outputKey = new IntWritable();
 
-        static ArrayList<PointWriteable> centroidi = new ArrayList<PointWriteable>();
+        static ArrayList<PointWriteable> centroidi = new ArrayList<>();
         private static int dimensione = 0;
 
 
