@@ -194,13 +194,15 @@ public class Main {
             //nuovi_centroidi = nuovi_centroidi.substring(0, nuovi_centroidi.length() - 1);
             //System.out.println("concatenazione"+nuovi_centroidi);
 
-            if(finito)
-                break;
+
 
             // se le dimensioni sono più di due e i punti sono troppi non creo il plot
             if (d == 2 && numPoints < 1000) {
                 PythonScriptExecutor.PythonExecutor("./python_scripts/plot_generator.py", numero_iterazioni, old_centroidiStringhe);
             }
+
+            if(finito)
+                break;
         }
 
 
