@@ -42,6 +42,10 @@ public class Main {
         System.out.println("args[3]: <d>=" + otherArgs[3]);
 
         int k = Integer.parseInt(otherArgs[2]);
+        if (k>100){
+            System.out.println("K deve essere minore o uguale di 100");
+            System.exit(1);
+        }
         int d = Integer.parseInt(otherArgs[3]);
         //
         double threshold = 0.1;
@@ -112,6 +116,7 @@ public class Main {
 
             job.setInputFormatClass(TextInputFormat.class);
 
+            //?????
             //System.exit(job.waitForCompletion(true) ? 0 : 1);
 
             job.waitForCompletion(true);
@@ -119,16 +124,11 @@ public class Main {
             // Esempio di recupero dei dati scritti nel contesto principale
             FileSystem fs = FileSystem.get(conf);
 
-            //CAMBIARE !!!
-            Path outputPath = new Path("output"+numero_iterazioni+"/part-r-00000");  // Path al file di output del job
-            BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(outputPath)));
-
-            String nuovi_centroidi = "";
-            String line;
             boolean finito = true;
-
             writeToFile(String.valueOf(numero_iterazioni+1), LogPath);
+            //String nuovi_centroidi = "";
 
+            // building the string for the old centroids
             StringBuilder sb = new StringBuilder();
             // Itera attraverso gli elementi dell'ArrayList
             for (String elemento : centroidi) {
@@ -141,38 +141,53 @@ public class Main {
             }
             String old_centroidiStringhe = sb.toString();
 
-            while ((line = br.readLine()) != null) {
-                // Divide la stringa delle coordinate dei centroidi in un array di stringhe
-                String[] context_informations = line.split("\t");
+            // reading from HDFS the output of MapReduce
+            for(int i=0; i<k; i++){
 
-                int num_cluster = Integer.parseInt(context_informations[0].trim());
-               // PointWritable old_Centroid = new PointWritable(context_informations[1]);
+                String path = "output"+numero_iterazioni+"/part-r-";
+                if(i<10){
+                    path = path + "0000"+i;
+                }else if(i >= 10 && i<100){
+                    path = path + "000"+i;
+                }
 
-                //System.out.println("riga: "+context_informations[1]);
-                //String coordinateString = "";
+                Path outputPath = new Path(path);  // Path al file di output del job
+                BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(outputPath)));
+                String line;
 
-                // for the new MapReduce centroids
-                nuovi_centroidi = nuovi_centroidi+context_informations[1]+";";
+                while ((line = br.readLine()) != null) {
+                    // Divide la stringa delle coordinate dei centroidi in un array di stringhe
+                    String[] context_informations = line.split("\t");
 
-                PointWritable old_centroid = new PointWritable(centroidi.get(num_cluster-1));
-                PointWritable new_centroid = new PointWritable(context_informations[1]);
-                double distance = old_centroid.calculateDistance(new_centroid);
+                    int num_cluster = Integer.parseInt(context_informations[0].trim());
+                    // PointWritable old_Centroid = new PointWritable(context_informations[1]);
 
-                System.out.println("Centroid number "+num_cluster+" movement : "+distance);
+                    //System.out.println("riga: "+context_informations[1]);
+                    //String coordinateString = "";
 
-                //Writing on the log
-                writeToFile(num_cluster+":"+distance, LogPath);
+                    // for the new MapReduce centroids
+                    //nuovi_centroidi = nuovi_centroidi+context_informations[1]+";";
 
-                //update the centroids
-                centroidi.set(num_cluster-1,context_informations[1]);
+                    PointWritable old_centroid = new PointWritable(centroidi.get(num_cluster-1));
+                    PointWritable new_centroid = new PointWritable(context_informations[1]);
+                    double distance = old_centroid.calculateDistance(new_centroid);
 
-                if(distance > threshold)
-                    finito = false;
+                    System.out.println("Centroid number "+num_cluster+" movement : "+distance);
 
+                    //Writing on the log
+                    writeToFile(num_cluster+":"+distance, LogPath);
+
+                    //update the centroids
+                    centroidi.set(num_cluster-1,context_informations[1]);
+
+                    if(distance > threshold)
+                        finito = false;
+
+                }
+                br.close();
             }
-            br.close();
 
-            nuovi_centroidi = nuovi_centroidi.substring(0, nuovi_centroidi.length() - 1);
+            //nuovi_centroidi = nuovi_centroidi.substring(0, nuovi_centroidi.length() - 1);
             //System.out.println("concatenazione"+nuovi_centroidi);
 
             if(finito)
