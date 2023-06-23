@@ -10,7 +10,7 @@ with Hadoop MapReduce, follow the steps below:</p><ol><li><p>Ensure that you hav
 Each coordinate should be separated by a comma.</p></li><li><p>Run the following command to execute the K-Means algorithm:</p></li>
 </ol><pre><div class="bg-black rounded-md mb-4"><div class="flex items-center relative text-gray-200 bg-gray-800 px-4 py-2 text-xs font-sans
 justify-between rounded-t-md">
-<code>hadoop jar kmeans.jar org.example.Main "input" "output" "k"</code></div></div></pre><p>Replace <code>&lt;input&gt;</code> with the path to your input data file, <code>&lt;output&gt;</code> 
+<code>hadoop jar kmeans.jar it.unipi.hadoop.Main "input" "output" "k"</code></div></div></pre><p>Replace <code>&lt;input&gt;</code> with the path to your input data file, <code>&lt;output&gt;</code> 
 with the desired output directory, and <code>&lt;k&gt;</code> with the number of clusters/centroids you want to generate.</p>
 <ol start="5"><li>Wait for the execution to complete. The output will be stored in the specified output directory and will contain
 the final centroids and the data points assigned to each cluster.</li></ol><h2>Customization</h2><p>This project allows customization

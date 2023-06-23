@@ -1,36 +1,24 @@
-package org.example;
+package it.unipi.hadoop;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.*;
-import org.apache.hadoop.mapreduce.*;
 import org.apache.hadoop.mapreduce.lib.input.*;
-import org.apache.hadoop.mapreduce.lib.output.*;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.io.*;
-import java.util.List;
-import org.apache.hadoop.filecache.DistributedCache;
-import javax.naming.ConfigurationException;
-import org.apache.hadoop.fs.*;
+
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.temporal.ChronoUnit;
-import java.time.*;
-import java.util.*;
-import org.apache.hadoop.mapreduce.lib.input.NLineInputFormat;
-import org.apache.hadoop.util.GenericOptionsParser;
 
-import static org.example.PythonScriptExecutor.PythonExecutor;
+import java.util.*;
+
+import org.apache.hadoop.util.GenericOptionsParser;
 
 
 public class Main {
@@ -123,7 +111,6 @@ public class Main {
             FileOutputFormat.setOutputPath(job, new Path(otherArgs[1]+numero_iterazioni));
 
             job.setInputFormatClass(TextInputFormat.class);
-            //job.setOutputValueClass(PointWritable.class);
 
             //System.exit(job.waitForCompletion(true) ? 0 : 1);
 
@@ -161,7 +148,7 @@ public class Main {
                 int num_cluster = Integer.parseInt(context_informations[0].trim());
                // PointWritable old_Centroid = new PointWritable(context_informations[1]);
 
-                System.out.println("riga: "+context_informations[1]);
+                //System.out.println("riga: "+context_informations[1]);
                 //String coordinateString = "";
 
                 // for the new MapReduce centroids
@@ -186,13 +173,13 @@ public class Main {
             br.close();
 
             nuovi_centroidi = nuovi_centroidi.substring(0, nuovi_centroidi.length() - 1);
-            System.out.println("concatenazione"+nuovi_centroidi);
+            //System.out.println("concatenazione"+nuovi_centroidi);
 
             if(finito)
                 break;
 
             // if(dimensione == 2)
-            PythonExecutor("./python_scripts/plot_generator.py",numero_iterazioni,old_centroidiStringhe);
+            PythonScriptExecutor.PythonExecutor("./python_scripts/plot_generator.py",numero_iterazioni,old_centroidiStringhe);
 
         }
 

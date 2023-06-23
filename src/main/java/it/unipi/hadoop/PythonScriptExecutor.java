@@ -1,4 +1,4 @@
-package org.example;
+package it.unipi.hadoop;
 
 import java.io.BufferedReader;
 import java.io.IOException;

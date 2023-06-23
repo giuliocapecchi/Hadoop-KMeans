@@ -1,4 +1,4 @@
-package org.example;
+package it.unipi.hadoop;
 import org.apache.hadoop.io.Text;
 
 import java.util.ArrayList;

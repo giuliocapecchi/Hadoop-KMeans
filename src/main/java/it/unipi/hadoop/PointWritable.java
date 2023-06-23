@@ -1,4 +1,4 @@
-package org.example;
+package it.unipi.hadoop;
 
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -105,7 +105,6 @@ public class PointWritable implements Writable {
 
         while (tokenizer.hasMoreTokens()) {
             String token = tokenizer.nextToken();
-            System.out.println("token : "+token);
             double coordinateValue = Double.parseDouble(token);
             coordinateList.add(coordinateValue);
         }
