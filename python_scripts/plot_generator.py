@@ -14,7 +14,7 @@ def assign_points_to_clusters(points, centroids):
     return clusters
 
 def plot_clusters(clusters, num_iter, centroids):
-    colors = ['red', 'blue', 'green', 'purple', 'orange', 'yellow', 'black', 'brown', 'pink', 'gray']  # Add more colors if needed
+    colors = ['red', 'blue', 'green', 'purple', 'orange', 'yellow', 'black', 'brown', 'pink', 'gray', 'olive', 'chocolate', 'sandybrown', 'aquamarine', 'lavender', 'aqua', 'navy', 'rebeccapurple', 'orchid', 'forestgreen', ]  # Add more colors if needed
 
     for i, (cluster_points, color) in enumerate(zip(clusters, colors)):
         cluster_points = np.array(cluster_points)

@@ -31,8 +31,8 @@ public class Main {
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
         String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
-        if (otherArgs.length != 4) {
-            System.err.println("Usage: kmeans <input> <output> <k> <d>");
+        if (otherArgs.length != 4 && otherArgs.length != 5) {
+            System.err.println("Usage: kmeans <input> <output> <k> <d> (optional)<threshold>");
             System.exit(1);
         }
 
@@ -41,16 +41,20 @@ public class Main {
         System.out.println("args[2]: <k>=" + otherArgs[2]);
         System.out.println("args[3]: <d>=" + otherArgs[3]);
 
+        int max_iter = 100;
+        double threshold = 0.1;
+
+        if(otherArgs.length == 5) {
+            System.out.println("args[4]: <threshold>=" + otherArgs[4]);
+            threshold = Double.parseDouble(otherArgs[4]);
+        }
         int k = Integer.parseInt(otherArgs[2]);
         if (k>100){
             System.out.println("K deve essere minore o uguale di 100");
             System.exit(1);
         }
         int d = Integer.parseInt(otherArgs[3]);
-        //
-        double threshold = 0.1;
-        int max_iter = 1000;
-        //
+
         if(deleteOldFile(LogPath)==1)
             System.exit(1);
 
@@ -193,16 +197,17 @@ public class Main {
             if(finito)
                 break;
 
-            // if(dimensione == 2)
-            PythonScriptExecutor.PythonExecutor("./python_scripts/plot_generator.py",numero_iterazioni,old_centroidiStringhe);
-
+            // se le dimensioni sono più di due e i punti sono troppi non creo il plot
+            if (d == 2 && numPoints < 1000) {
+                PythonScriptExecutor.PythonExecutor("./python_scripts/plot_generator.py", numero_iterazioni, old_centroidiStringhe);
+            }
         }
 
 
         long endTime = System.currentTimeMillis();
         long duration = endTime - startTime;
         writeToFile("Execution time: "+duration/1000+" seconds",LogPath);
-        System.out.println("K-means converged at iteration "+numero_iterazioni);
+        System.out.println("K-means converged at iteration "+numero_iterazioni+",with time: "+duration/1000);
         System.exit(0);
 
     }
