@@ -91,7 +91,7 @@ public class Main {
             Job job = Job.getInstance(conf, "kmeans_iter_"+numero_iterazioni);
 
             // One reducer per every cluster
-            //job.setNumReduceTasks(k);
+            job.setNumReduceTasks(k);
 
             // Imposta le variabili di configurazione per il numero di cluster/centroidi e gli indici dei centroidi iniziali
             job.getConfiguration().setInt("k", k);

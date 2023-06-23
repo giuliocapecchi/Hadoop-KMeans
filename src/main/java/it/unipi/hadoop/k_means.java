@@ -102,7 +102,7 @@ public class k_means {
                 Configuration conf = context.getConfiguration();
                 dimensione = conf.getInt("d", -1);
             }*/
-
+            System.out.println("dimensione dal setup: "+dimensione);
             // int cluster_number = key.get() - 1 ;
 
             System.out.println("dimensione nel reducer:"+dimensione);
