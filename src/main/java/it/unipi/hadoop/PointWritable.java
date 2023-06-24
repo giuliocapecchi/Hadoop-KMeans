@@ -2,21 +2,17 @@ package it.unipi.hadoop;
 
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
-
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.DataInput;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-
 public class PointWritable implements Writable {
 
     private ArrayList<Double> coordinate;
-
     private int cluster=-1;
     private double min_distance=-1;
-
    private int weight = 1;
 
     // costruttore default
@@ -25,14 +21,9 @@ public class PointWritable implements Writable {
 
     // costruttore di copia
     public PointWritable(PointWritable point){
-
         this.cluster = point.cluster;
         this.min_distance = point.min_distance;
         this.coordinate = point.coordinate;
-    }
-
-    public PointWritable(Text coordinate) {
-        this.coordinate = parseCoordinates(coordinate);
     }
 
     public PointWritable(ArrayList<Double> coordinate) {
@@ -47,16 +38,14 @@ public class PointWritable implements Writable {
 
         // Verifica che i due punti abbiano lo stesso numero di coordinate
         if (this.coordinate.size() != other.coordinate.size()) {
-            throw new IllegalArgumentException("I due punti devono avere lo stesso numero di coordinate.");
+            throw new IllegalArgumentException("Error in PointWritable.sum: Points need to have the same dimension.");
         }
 
         // Somma delle coordinate
         for (int i = 0; i < this.coordinate.size(); i++) {
             Double sum = this.coordinate.get(i) + other.coordinate.get(i);
             this.setCoordinate(i,sum);
-
         }
-
     }
 
     public double calculateDistance(PointWritable otherPoint) {
@@ -72,31 +61,11 @@ public class PointWritable implements Writable {
             double diff = coordinate.get(i) - otherCoordinates.get(i);
             squaredSum += diff * diff;
         }
-
         return Math.sqrt(squaredSum);
     }
 
-    private ArrayList<Double> parseCoordinates(Text coordinate) {
-        ArrayList<Double> coordinateList = new ArrayList<>();
-
-        String coordinateString = coordinate.toString().trim();
-
-        // Rimuovi "[" e "]" dalla stringa di coordinate
-        coordinateString = coordinateString.substring(1, coordinateString.length() - 1);
-
-
-        StringTokenizer tokenizer = new StringTokenizer(coordinateString, ",");
-
-        while (tokenizer.hasMoreTokens()) {
-            String token = tokenizer.nextToken();
-            double coordinateValue = Double.parseDouble(token);
-            coordinateList.add(coordinateValue);
-        }
-
-        return coordinateList;
-    }
-
     private ArrayList<Double> parseCoordinates(String coordinateString) {
+
         ArrayList<Double> coordinateList = new ArrayList<>();
 
         coordinateString = coordinateString.trim();
@@ -108,7 +77,6 @@ public class PointWritable implements Writable {
             double coordinateValue = Double.parseDouble(token);
             coordinateList.add(coordinateValue);
         }
-
         return coordinateList;
     }
 
@@ -128,9 +96,7 @@ public class PointWritable implements Writable {
         this.coordinate.set(i,value);
     }
 
-    public void setCluster(int cluster) {
-        this.cluster = cluster;
-    }
+    public void setCluster(int cluster) { this.cluster = cluster; }
 
     public void setMin_distance(double min_distance) {
         this.min_distance = min_distance;
@@ -145,7 +111,7 @@ public class PointWritable implements Writable {
     }
 
 
-    // write and read methods required by the Writable interface
+    // Metodi write and readField richiesti dall'interfaccia Writable
     @Override
     public void write(DataOutput out) throws IOException {
         out.writeInt(coordinate.size());

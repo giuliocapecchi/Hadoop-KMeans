@@ -5,17 +5,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class PythonScriptExecutor {
-
     public static void PythonExecutor(String scriptPath, int numero_iterazione, String centroids) {
         try {
-            // Crea l'array di argomenti da passare allo script PythoN
+            // Crea l'array di argomenti da passare allo script Python
             String[] centroidArray = centroids.split(";");
             String[] pythonArgs = new String[centroidArray.length + 3];
             pythonArgs[0] = "python3";
             pythonArgs[1] = scriptPath;
             pythonArgs[2] = Integer.toString(numero_iterazione);
             System.arraycopy(centroidArray, 0, pythonArgs, 3, centroidArray.length);
-
 
             Process process = Runtime.getRuntime().exec(pythonArgs);
 
@@ -35,7 +33,7 @@ public class PythonScriptExecutor {
 
             // Attendi la terminazione dello script Python
             int exitCode = process.waitFor();
-            System.out.println(scriptPath+" è terminato con codice di uscita: " + exitCode);
+            System.out.println(scriptPath+" terminated with exit code : " + exitCode);
 
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
