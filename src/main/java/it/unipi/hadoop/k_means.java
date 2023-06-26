@@ -86,15 +86,16 @@ public class k_means {
 
             ArrayList<Double> zeros = new ArrayList<>(Collections.nCopies(dimensione, 0.0));
             PointWritable new_centroid = new PointWritable(zeros);
+            new_centroid.setWeight(0);
 
-            int num_points = 0;
             for (PointWritable punto : values) {
                 new_centroid.sum(punto);
-                num_points += punto.getWeight();
+                int weight = new_centroid.getWeight() + punto.getWeight();
+                new_centroid.setWeight(weight);
             }
 
             for (int i=0; i<dimensione; i++){
-                Double average = new_centroid.getCoordinates().get(i)/num_points;
+                Double average = new_centroid.getCoordinates().get(i)/new_centroid.getWeight();
                 new_centroid.setCoordinate(i,average);
             }
             context.write(key,new_centroid);
