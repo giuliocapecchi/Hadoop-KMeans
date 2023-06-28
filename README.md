@@ -11,9 +11,9 @@ Each coordinate should be separated by a comma.</p></li><li><p>Run the following
 </ol><pre><div class="bg-black rounded-md mb-4"><div class="flex items-center relative text-gray-200 bg-gray-800 px-4 py-2 text-xs font-sans
 justify-between rounded-t-md">
 <code>hadoop jar kmeans.jar it.unipi.hadoop.Main "input" "output" "k" "d" (optional)"threshold"</code></div></div></pre><p>Replace <code>&lt;input&gt;</code> with the path to your input data file, <code>&lt;output&gt;</code> 
-with the desired output directory, and <code>&lt;k&gt;</code> with the number of clusters/centroids you want to generate.</p>
-<ol start="5"><li>Wait for the execution to complete. The output will be stored in the specified output directory and will contain
-the final centroids and the data points assigned to each cluster.</li></ol><h2>Customization</h2><p>This project allows customization
+with the desired output directory, <code>&lt;k&gt;</code> with the number of clusters/centroids you want to generate, <code>d</code> with the points' dimension and <code>threshold</code> with the desired treshold for the stopping criterion (this parameter is optional).</p>
+<ol start="5"><li>Wait for the execution to complete. The output (log_distances.txt) will be stored in the specified output directory and will contain
+the evolution of the algorithm, including the elapsed time duration. Additionally, if you provided less than 1000 points in 2 dimensions, the folder <code>plots</code> will be populated with the graphs representing each iteration.</li></ol><h2>Customization</h2><p>This project allows customization
 of the K-Means algorithm. You can modify the MapReduce implementation or adjust the parameters to fit your specific needs. Additionally
 , you can extend the <code>Point</code> class provided in the project to add more functionality or handle data with different dimensions.</p>
 <h2>Contributors</h2>
