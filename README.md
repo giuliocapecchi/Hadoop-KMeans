@@ -23,8 +23,5 @@ of the K-Means algorithm. You can modify the MapReduce implementation or adjust 
 <li><a href="https://github.com/SteMiche" target="_new">Stefano Micheloni</a></li>
 </ul>
 
-
-<h2>License</h2>
-<p>This project is licensed under the <a href="https://github.com/giuliocapecchi/k-means/blob/main/.idea/license.txt" target="_new">MIT License</a>.</p>
 <h2>References</h2><ul><li><a href="https://en.wikipedia.org/wiki/K-means_clustering" target="_new">K-Means Clustering</a></li><li>
 <a href="https://hadoop.apache.org/" target="_new">Apache Hadoop</a></li></ul></div></div></div>
